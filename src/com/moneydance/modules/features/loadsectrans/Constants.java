@@ -39,8 +39,12 @@ public abstract class Constants {
 	public static final String SECURITY_COST = "Security Cost";  
 	public static final String INVESTMENT_INCOME = "Investment Income";  
 	public static final String INVESTMENT_COST = "Investment Cost";  
-	public static final String SECURITY_DIVIDEND = "Security Dividend";  
-	public static final String [] TRANSTYPES = {SECURITY_INCOME,SECURITY_DIVIDEND, SECURITY_COST,
+	public static final String SECURITY_DIVIDEND = "Security Dividend";
+	public static final String SECURITY_BUY = "Buy Security";
+	public static final String SECURITY_BUY_XFER = "Buy Security (xfer)";
+	public static final String SECURITY_SELL = "Sell Security";
+	public static final String SECURITY_SELL_XFER = "Sell Security (xfer)";
+	public static final String [] TRANSTYPES = {SECURITY_INCOME,SECURITY_DIVIDEND,SECURITY_COST,SECURITY_BUY,SECURITY_BUY_XFER,SECURITY_SELL,SECURITY_SELL_XFER,
 		INVESTMENT_INCOME, INVESTMENT_COST};
 	public static final String NEWTRAN = "**new**";
 	public static final String NOTICKER = "main";

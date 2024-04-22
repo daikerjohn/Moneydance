@@ -43,10 +43,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -82,6 +79,8 @@ public class FileSelectWindow extends JPanel{
 	  private JComboBox<String> valueCB;
 	  private JComboBox<String> referenceCB;
 	  private JComboBox<String> descCB;
+	  private JComboBox<String> sharesCB;
+	  private JComboBox<String> priceCB;
 	  private JCheckBox exchCB;
 	  private JScrollPane fieldsScroll;
 	  private JPanel fieldsPan;
@@ -101,6 +100,8 @@ public class FileSelectWindow extends JPanel{
 	  private String [] arrCategories;
 	  private Map<String,Account> mapAccts;
 	  private String strName = "";
+	  private boolean paramsLoaded = false;
+	  private boolean fileSelected = false;
 	public FileSelectWindow() throws HeadlessException {
 		MRBPreferences2.loadPreferences(Main.context);
 		preferences = MRBPreferences2.getInstance();
@@ -110,9 +111,20 @@ public class FileSelectWindow extends JPanel{
 		loadAccounts(Main.context.getRootAccount(),strName);
 		arrCategories = new String[listCategories.size()];
 		int i=0;
+		//for (Account acct :listCategories) {
+		//	arrCategories[i++] = acct.getAccountName();
+		//}
 		for (Account acct :listCategories) {
-			arrCategories[i++] = acct.getAccountName();
+			String acctName = "";
+			Account parent = acct.getParentAccount();
+			if(parent != null) {
+				acctName = parent.getAccountName() + ":";
+			}
+			acctName += acct.getAccountName();
+			arrCategories[i++] = acctName;
+			//arrCategories[i++] = acct.getAccountName();
 		}
+		Arrays.sort(arrCategories);
 		fileChooser = new JFileChooser();
 		arrNames = mapNames.keySet().toArray(new String[0]);
 		GridBagLayout gbl_panel = new GridBagLayout();
@@ -151,6 +163,29 @@ public class FileSelectWindow extends JPanel{
 		this.add(lblAccounts, GridC.getc(x,y).insets(10, 0, 0, 0));
 
 		accountsCB = new JComboBox<String>(arrNames);
+		accountsCB.addItem("Please Select an Account");
+		accountsCB.addActionListener(new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				@SuppressWarnings("unchecked")
+				JComboBox<Integer> cbAccountT = (JComboBox<Integer>) e.getSource();
+				String selectedAccount = (String)cbAccountT.getSelectedItem();
+				System.err.println("selectedAccount: " + selectedAccount);
+				if(selectedAccount != null && !selectedAccount.equals("Please Select an Account")) {
+					params = new Parameters(selectedAccount);
+					for (FieldLine objLine:params.getLines()){
+						objLine.setAccountObject();
+					}
+					paramsLoaded = true;
+					if(fileSelected) {
+						loadFields();
+					}
+				} else {
+					paramsLoaded = false;
+				}
+				//System.err.println("loadFields: " + loadFields);
+			}
+		});
 		x++;
 		this.add(accountsCB, GridC.getc(x,y).insets(5, 0, 0, 0));
 		
@@ -198,7 +233,8 @@ public class FileSelectWindow extends JPanel{
 				params.setExch(chbExchT.isSelected());
 			}
 		});
-		this.add(exchCB, GridC.getc(x,y).insets(5, 5, 5, 5).west());	
+		this.add(exchCB, GridC.getc(x,y).insets(5, 5, 5, 5).west());
+
 		JLabel lblLDate = new JLabel("Select Date Field");
 		x=1;
 		y++;
@@ -214,7 +250,8 @@ public class FileSelectWindow extends JPanel{
 				params.setDate((String)cbDateT.getSelectedItem());
 			}
 		});
-		this.add(dateCB, GridC.getc(x,y).insets(5, 5, 5, 5).west());	
+		this.add(dateCB, GridC.getc(x,y).insets(5, 5, 5, 5).west());
+
 		JLabel lblLValue = new JLabel("Select Value Field");
 		x=1;
 		y++;
@@ -233,6 +270,7 @@ public class FileSelectWindow extends JPanel{
 		this.add(valueCB, GridC.getc(x,y).insets(5, 5, 5, 5).west());	
 		x=1;
 		y++;
+
 		JLabel lblLDesc = new JLabel("Select Description Field");		
 		this.add(lblLDesc, GridC.getc(x,y).insets(5, 5, 5, 5));
 		x++;
@@ -247,6 +285,45 @@ public class FileSelectWindow extends JPanel{
 			}
 		});
 		this.add(descCB, GridC.getc(x,y).insets(5, 5, 5, 5).west());
+		x=1;
+		y++;
+
+
+		JLabel lblLShares = new JLabel("Select Share Field");
+		x=1;
+		y++;
+		this.add(lblLShares, GridC.getc(x,y).insets(5, 5, 5, 5));
+		x++;
+		sharesCB = new JComboBox<String>();
+		sharesCB.addItem("Please Select a Field");
+		sharesCB.addActionListener(new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				@SuppressWarnings("unchecked")
+				JComboBox<Integer> cbSharesT = (JComboBox<Integer>) e.getSource();
+				params.setShares((String)cbSharesT.getSelectedItem());
+			}
+		});
+		this.add(sharesCB, GridC.getc(x,y).insets(5, 5, 5, 5).west());
+
+		JLabel lblLPrice = new JLabel("Select Price Field");
+		x=1;
+		y++;
+		this.add(lblLPrice, GridC.getc(x,y).insets(5, 5, 5, 5));
+		x++;
+		priceCB = new JComboBox<String>();
+		priceCB.addItem("Please Select a Field");
+		priceCB.addActionListener(new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				@SuppressWarnings("unchecked")
+				JComboBox<Integer> cbPriceT = (JComboBox<Integer>) e.getSource();
+				params.setPrice((String)cbPriceT.getSelectedItem());
+			}
+		});
+		this.add(priceCB, GridC.getc(x,y).insets(5, 5, 5, 5).west());
+
+
 		x=1;
 		y++;
 		JLabel lblTransType = new JLabel("Transaction Types");
@@ -309,11 +386,16 @@ public class FileSelectWindow extends JPanel{
 		lastDir = fileChooser.getCurrentDirectory().getAbsolutePath();
 		preferences.put(Constants.PROGRAMNAME+Constants.PREFLASTDIRECTORY,lastDir);
 		preferences.isDirty();
+		fileSelected = true;
+		if(paramsLoaded) {
+			loadFields();
+		}
+		/*
 		params = new Parameters();
 		for (FieldLine objLine:params.getLines()){
 			objLine.setAccountObject();
 		}
-		loadFields();
+		 */
 	}
 	private void loadFields() {
 		FileReader frPrices;
@@ -331,6 +413,9 @@ public class FileSelectWindow extends JPanel{
 			 */
 			String strLine = brPrices.readLine(); 
 			arColumns = strLine.split(",");
+			for(int i=0; i<arColumns.length; i++) {
+				arColumns[i] = arColumns[i].trim();
+			}
 			brPrices.close();
 		}
 		catch (FileNotFoundException e) {
@@ -347,8 +432,12 @@ public class FileSelectWindow extends JPanel{
 		int iDateItem = -1;
 		int iReferenceItem = -1;
 		int iDescItem = -1;
+		int iShareItem = -1;
+		int iPriceItem = -1;
 		int iValueItem = -1;
+		//System.err.println(arColumns);
 		for (int i=0;i<arColumns.length;i++) {
+			System.err.println("i: " + i + " = " + arColumns[i]);
 			if (arColumns[i].equals(params.getTicker()))
 				iTickerItem = i;
 			tickerCB.addItem(arColumns[i]);
@@ -364,12 +453,24 @@ public class FileSelectWindow extends JPanel{
 			if (arColumns[i].equals(params.getDesc()))
 				iDescItem = i;
 			descCB.addItem(arColumns[i]);
+			if (arColumns[i].equals(params.getShares())) {
+				System.err.println("Share match!");
+				iShareItem = i;
+			}
+			sharesCB.addItem(arColumns[i]);
+			if (arColumns[i].equals(params.getPrice())) {
+				System.err.println("Price match!");
+				iPriceItem = i;
+			}
+			priceCB.addItem(arColumns[i]);
 		}
 		tickerCB.setSelectedIndex(iTickerItem == -1?0:iTickerItem+1);
 		valueCB.setSelectedIndex(iValueItem == -1?0:iValueItem+1);
 		dateCB.setSelectedIndex(iDateItem == -1?0:iDateItem+1);
 		referenceCB.setSelectedIndex(iReferenceItem == -1?0:iReferenceItem+1);
 		descCB.setSelectedIndex(iDescItem == -1?0:iDescItem+1);
+		sharesCB.setSelectedIndex(iShareItem == -1?0:iShareItem+1);
+		priceCB.setSelectedIndex(iPriceItem == -1?0:iPriceItem+1);
 		exchCB.setSelected(params.getExch());
 		listLines = params.getLines();
 		mapCombos = new HashMap<Object,String>();
@@ -380,6 +481,8 @@ public class FileSelectWindow extends JPanel{
 		dateCB.revalidate();
 		referenceCB.revalidate();
 		descCB.revalidate();
+		sharesCB.revalidate();
+		priceCB.revalidate();
 		fieldsPan.revalidate();
 		fieldsScroll.revalidate();
 		JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
@@ -529,9 +632,10 @@ public class FileSelectWindow extends JPanel{
 					}
 					FieldLine objTempLine = params.matchType(strType);
 					if (objTempLine != null) {
-						if (objCurrent != null && objCurrent != objTempLine)
+						if (objCurrent != null && objCurrent != objTempLine) {
 							JOptionPane.showMessageDialog(null, "Transaction Type already defined");
 							continue;
+						}
 					}
 					if (objCurrent != null) {
 						String strOldType = objCurrent.getType();
@@ -594,7 +698,7 @@ public class FileSelectWindow extends JPanel{
 			if (iSelected[dateCB.getSelectedIndex()] != 0) {
 				JFrame fTemp = new JFrame();
 				JOptionPane.showMessageDialog(fTemp,"No field can be selected twice");
-				return;	
+				return;
 			}
 			else
 				iSelected[dateCB.getSelectedIndex()]= 1;
@@ -612,6 +716,23 @@ public class FileSelectWindow extends JPanel{
 			}
 			else
 				iSelected[valueCB.getSelectedIndex()]= 1;
+
+			if (iSelected[sharesCB.getSelectedIndex()] != 0) {
+				JFrame fTemp = new JFrame();
+				JOptionPane.showMessageDialog(fTemp,"No field can be selected twice");
+				return;
+			}
+			else
+				iSelected[sharesCB.getSelectedIndex()]= 1;
+
+			if (iSelected[priceCB.getSelectedIndex()] != 0) {
+				JFrame fTemp = new JFrame();
+				JOptionPane.showMessageDialog(fTemp,"No field can be selected twice");
+				return;
+			}
+			else
+				iSelected[priceCB.getSelectedIndex()]= 1;
+
 	     //Create and set up the window.
 		if (accountsCB.getSelectedIndex()==0) {
 			JFrame fTemp = new JFrame();

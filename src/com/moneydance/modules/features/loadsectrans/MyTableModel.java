@@ -42,7 +42,7 @@ import com.infinitekind.moneydance.model.Account;
 
 public class MyTableModel extends DefaultTableModel {
     private List<SecLine>listLines;
-	private static String[] arrColumns = {"Select","Ticker","Settle","C","Reference","Description","Value"};
+	private static String[] arrColumns = {"Select","Ticker","Settle","C","Reference","Description","Value", "Shares", "Price"};
 
 	public MyTableModel(Set<SecLine> setLinesp,SortedMap<String,Account> mapAccountsp){
 		super();
@@ -66,7 +66,7 @@ public class MyTableModel extends DefaultTableModel {
 
 		@Override
 	public int getColumnCount() {
-			return 7;
+			return arrColumns.length;
 	}	
 	@Override
 	public String getColumnName(int c) {
@@ -74,7 +74,8 @@ public class MyTableModel extends DefaultTableModel {
 	}
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		DecimalFormat dfNumbers = new DecimalFormat("#0.0000");
+		DecimalFormat dfShares = new DecimalFormat("#0.00000");
+		DecimalFormat dfDollars = new DecimalFormat("#0.00");
 		switch (columnIndex) {
 		case 0:
 			return  listLines.get(rowIndex).getSelect();
@@ -88,9 +89,14 @@ public class MyTableModel extends DefaultTableModel {
 			return  listLines.get(rowIndex).getReference();
 		case 5:
 			return  listLines.get(rowIndex).getDescription();
+		case 6:
+			return dfDollars.format(listLines.get(rowIndex).getValue()/100.0);
+		case 7:
+			return dfShares.format(listLines.get(rowIndex).getShares()/1000.0);
+		case 8:
+			return dfShares.format(listLines.get(rowIndex).getPrice());
 		default:
-			
-			return dfNumbers.format(listLines.get(rowIndex).getValue()/100.0);
+			return dfShares.format(listLines.get(rowIndex).getValue()/100.0);
 		}
 	}
 	@Override

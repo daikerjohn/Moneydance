@@ -38,6 +38,10 @@ public class SecLineCompare implements Comparator<SecLine> {
 		Integer iDate2 = scLine2.getDate();
 		Long lValue1 = scLine1.getValue();
 		Long lValue2 = scLine2.getValue();
+		Long lShares1 = scLine1.getShares();
+		Long lShares2 = scLine2.getShares();
+		Double dPrice1 = scLine1.getPrice();
+		Double dPrice2 = scLine2.getPrice();
 		int iCompare = iDate1.compareTo(iDate2);
 		if (iCompare != 0)
 			return iCompare;

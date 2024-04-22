@@ -37,7 +37,7 @@ import javax.swing.table.DefaultTableModel;
 
 
 public class GenerateTableModel extends DefaultTableModel {
-	private static String[] arrColumns = {"Select","P/S","Amount","Account","Description","Cheque","T Type","Date"};
+	private static String[] arrColumns = {"Select","P/S","Amount","Account","Description","Cheque","T Type","Date", "Shares", "Price"};
 	private List<GenerateTransaction> listTrans; 
 	private List<Boolean> listSelect;
 
@@ -60,7 +60,7 @@ public class GenerateTableModel extends DefaultTableModel {
 
 		@Override
 	public int getColumnCount() {
-			return 8;
+			return arrColumns.length;
 	}	
 	@Override
 	public String getColumnName(int c) {
@@ -68,7 +68,8 @@ public class GenerateTableModel extends DefaultTableModel {
 	}
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		DecimalFormat dfNumbers = new DecimalFormat("#0.00");
+		DecimalFormat dfShares = new DecimalFormat("#0.00000");
+		DecimalFormat dfDollars = new DecimalFormat("#0.00");
 		switch (columnIndex) {
 		case 0:
 			if (listTrans.get(rowIndex).getType() == Constants.PARENT)
@@ -77,7 +78,7 @@ public class GenerateTableModel extends DefaultTableModel {
 		case 1:
 			return  listTrans.get(rowIndex).getType();
 		case 2:
-			return dfNumbers.format(listTrans.get(rowIndex).getAmount()/100.00);
+			return dfDollars.format(listTrans.get(rowIndex).getAmount()/100.00);
 		case 3:
 			return  listTrans.get(rowIndex).getAccount().getAccountName();
 		case 4:
@@ -86,9 +87,14 @@ public class GenerateTableModel extends DefaultTableModel {
 			return  listTrans.get(rowIndex).getCheque();
 		case 6:
 			return  listTrans.get(rowIndex).getTType();
+		case 7:
+			return  Main.cdate.format(listTrans.get(rowIndex).getDate());
+		case 8:
+			return dfShares.format(listTrans.get(rowIndex).getShares()/1000.0);
+		case 9:
+			return dfShares.format(listTrans.get(rowIndex).getPrice());
 		default:
 			return  Main.cdate.format(listTrans.get(rowIndex).getDate());
-			
 		}
 	}
 	@Override

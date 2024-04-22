@@ -1,5 +1,6 @@
 package com.moneydance.modules.features.loadsectrans;
 
+import com.google.gson.Gson;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,18 +31,40 @@ public class Parameters implements Serializable{
 
 	private String strTicker;
 	private String strValue;
+	private String strShares;
+	private String strPrice;
 	private String strDate;
 	private String strReference;
 	private String strDesc;
 	private boolean bExch;
 	private List<FieldLine> listFieldLines;
+
+	public static final char INVALID_CHARS[] = { '\\', '/', ':', '*', '?', '"', '<', '>', '|', '[', ']', '\'', ';', '=', ',' };
+	private static final char SANITIZED_CHAR = '_';
+	public static String sanitizeFileName(String filename, char substitute) {
+
+		for (int i = 0; i < INVALID_CHARS.length; i++) {
+			if (-1 != filename.indexOf(INVALID_CHARS[i])) {
+				filename = filename.replace(INVALID_CHARS[i], substitute);
+			}
+		}
+
+		return filename;
+	}
 	public Parameters() {
+		this("SecureTranLoad.bpam");
+	}
+	public Parameters(String accountName) {
 		/*
 		 * determine if file already exists
 		 */
 		abCurAcctBook = Main.context.getRootAccount().getBook();
 		fiCurFolder = abCurAcctBook.getRootFolder();
-		strFileName = fiCurFolder.getAbsolutePath()+"\\SecureTranLoad.bpam";
+		accountName = sanitizeFileName(accountName, SANITIZED_CHAR);
+
+		strFileName = Paths.get(fiCurFolder.getAbsolutePath(), "SecureTranLoad-"+accountName+".bpam").toString();
+		//strFileName = fiCurFolder.getAbsolutePath()+"\\" + accountName;
+
 		try {
 			fiCurInFile = new FileInputStream(strFileName);
 			ObjectInputStream ois = new ObjectInputStream(fiCurInFile);
@@ -50,6 +74,8 @@ public class Parameters implements Serializable{
 			Parameters objTemp = (Parameters) ois.readObject();
 			this.strTicker = objTemp.strTicker;
 			this.strValue = objTemp.strValue;
+			this.strShares = objTemp.strShares;
+			this.strPrice = objTemp.strPrice;
 			this.strDate = objTemp.strDate;
 			this.strReference = objTemp.strReference;
 			this.strDesc = objTemp.strDesc;
@@ -64,6 +90,8 @@ public class Parameters implements Serializable{
 			listFieldLines = new ArrayList<FieldLine>();
 			strTicker = "";
 			strValue = "";
+			strShares = "";
+			strPrice = "";
 			strDate = "";
 			strReference = "";
 			strDesc = "";
@@ -89,6 +117,12 @@ public class Parameters implements Serializable{
 	public String getValue() {
 		return strValue;
 	}
+	public String getShares() {
+		return strShares;
+	}
+	public String getPrice() {
+		return strPrice;
+	}
 	public String getDate() {
 		return strDate;
 	}
@@ -109,6 +143,12 @@ public class Parameters implements Serializable{
 	}
 	public void setValue(String strValuep) {
 		strValue = strValuep;
+	}
+	public void setShares(String strSharesp) {
+		strShares = strSharesp;
+	}
+	public void setPrice(String strPricep) {
+		strPrice = strPricep;
 	}
 	public void setDate(String strDatep) {
 		strDate = strDatep;
@@ -168,6 +208,9 @@ public class Parameters implements Serializable{
 			oos.writeObject(this);
 			oos.close();
 			fiCurOutFile.close();
+			Gson gson = new Gson();
+			String json = gson.toJson(this);
+			System.err.println(json);
 		}
 		catch(IOException i)
 		{
@@ -188,6 +231,10 @@ public class Parameters implements Serializable{
 				case Constants.SECURITY_COST:
 				case Constants.SECURITY_DIVIDEND:
 				case Constants.SECURITY_INCOME:
+				case Constants.SECURITY_BUY:
+				case Constants.SECURITY_BUY_XFER:
+				case Constants.SECURITY_SELL:
+				case Constants.SECURITY_SELL_XFER:
 					return true;
 				default : 
 					return false;

@@ -38,6 +38,8 @@ import com.infinitekind.moneydance.model.SplitTxn;
 public class GenerateTransaction {
 	private char tranType;
 	private long amount;
+	private long shares;
+	private double price;
 	private Account acct;
 	private String desc;
 	private String cheque;
@@ -70,6 +72,22 @@ public class GenerateTransaction {
 		index = -1;
 		txn=txnp;
 	}
+
+	public GenerateTransaction(char tranTypep,
+							   Account acctp,
+							   int tranDatep,
+							   long amountp,
+							   String descp,
+							   String chequep,
+							   String tTypep,
+							   String referencep,
+							   AbstractTxn txnp,
+							   long sharesp,
+							   double pricep) {
+		this(tranTypep, acctp, tranDatep, amountp, descp, chequep, tTypep, referencep, txnp);
+		this.shares = sharesp;
+		this.price = pricep;
+	}
 	
 	public int getIndex() {
 		return index;
@@ -80,6 +98,12 @@ public class GenerateTransaction {
 	
 	public long getAmount() {
 		return amount;
+	}
+	public long getShares() {
+		return shares;
+	}
+	public Double getPrice() {
+		return price;
 	}
 	
 	public Account getAccount() {
@@ -105,6 +129,7 @@ public class GenerateTransaction {
 		return invType;
 	}
 	private void setInvType() {
+
 			if (tType.equals("xfrtp_bank")) {
 				invType = InvestTxnType.BANK;
 				return;
@@ -122,6 +147,21 @@ public class GenerateTransaction {
 				invType = InvestTxnType.MISCINC;
 				return;
 			}
+			if (tType.equals("xfrtp_buy")) {
+				System.err.println(tType);
+				invType = InvestTxnType.BUY;
+				return;
+			}
+			if (tType.equals("xfrtp_sell")) {
+				System.err.println(tType);
+				invType = InvestTxnType.SELL;
+				return;
+			}
+			if (tType.equals("xfrtp_buysellxfr")) {
+				System.err.println(tType);
+				return;
+			}
+
 			invType = InvestTxnType.BANK;
 	}
 	public String getRef () {
