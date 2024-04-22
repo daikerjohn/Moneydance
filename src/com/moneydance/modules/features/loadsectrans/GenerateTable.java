@@ -67,7 +67,7 @@ public class GenerateTable extends JTable {
 		super(dm);
 		this.setFillsViewportHeight(true);
 		this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		this.setAutoResizeMode(AUTO_RESIZE_OFF);
+		this.setAutoResizeMode(AUTO_RESIZE_ALL_COLUMNS);
 		/*
 		 * Select
 		 */
@@ -111,6 +111,18 @@ public class GenerateTable extends JTable {
 		 */
 		this.getColumnModel().getColumn(7).setResizable(false);
 		this.getColumnModel().getColumn(7).setPreferredWidth(80);
+
+		/*
+		 * Shares
+		 */
+		this.getColumnModel().getColumn(8).setResizable(false);
+		this.getColumnModel().getColumn(8).setPreferredWidth(80);
+
+		/*
+		 * Price
+		 */
+		this.getColumnModel().getColumn(9).setResizable(false);
+		this.getColumnModel().getColumn(9).setPreferredWidth(80);
 	}
 
 

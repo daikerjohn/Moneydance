@@ -103,7 +103,7 @@ public class MyTable extends JTable {
 		super(dm);
 		this.setFillsViewportHeight(true);
 		this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		this.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		/*
 		 * Select
 		 */
@@ -126,7 +126,7 @@ public class MyTable extends JTable {
 		 * Cleared flag
 		 */
 		this.getColumnModel().getColumn(3).setResizable(false);
-		this.getColumnModel().getColumn(3).setPreferredWidth(6);
+		this.getColumnModel().getColumn(3).setPreferredWidth(10);
 		/*
 		 * Reference
 		 */
@@ -143,6 +143,16 @@ public class MyTable extends JTable {
 		 */
 		this.getColumnModel().getColumn(6).setResizable(true);
 		this.getColumnModel().getColumn(6).setPreferredWidth(80);
+		/*
+		 * Shares
+		 */
+		this.getColumnModel().getColumn(7).setResizable(true);
+		this.getColumnModel().getColumn(7).setPreferredWidth(80);
+		/*
+		 * Price
+		 */
+		this.getColumnModel().getColumn(8).setResizable(true);
+		this.getColumnModel().getColumn(8).setPreferredWidth(80);
 	}
 
 

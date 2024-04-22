@@ -41,18 +41,19 @@ public class SecLine {
 	private String strTicker;
 	private String strCleared;
 	private long lAmount;
+	private long lShares;
+	private double dPrice;
 	private Account acct;
 	private boolean bValid;
 	private boolean bIgnore;
 	private boolean bProcessed;
 
-	public SecLine(int iDatep,String strRefp,String strDescp, String strTickerp,String strClearedp,long lAmountp, Account acctp) {
-		
+	public SecLine(int iDatep,String strRefp,String strDescp, String strTickerp,String strClearedp,long lAmountp, Account acctp, long lSharesp, double dPricep) {
 		bSelect = false;
 		iDate = iDatep;
 		bValid = true;
 		bIgnore = false;
-		if (strTickerp.equals("#N/A")) 
+		if (strTickerp.equals("#N/A"))
 			strTicker = Constants.NOTICKER;
 		else {
 			strTicker = strTickerp;
@@ -60,13 +61,14 @@ public class SecLine {
 				bValid = false;
 		}
 		strCleared = strClearedp;
-		strDesc = strDescp;
-		strRef = strRefp;
+		strDesc = strDescp.trim();
+		strRef = strRefp.trim();
 		lAmount = lAmountp;
+		lShares = lSharesp;
+		dPrice = dPricep;
 		acct = acctp;
 		setIgnore(false);
-        setProcessed(false);
-
+		setProcessed(false);
 	}
 	/*
 	 * gets
@@ -98,6 +100,12 @@ public class SecLine {
 
 	public long getValue() {
 		return lAmount; 
+	}
+	public long getShares() {
+		return lShares;
+	}
+	public double getPrice() {
+		return dPrice;
 	}
 	
 	public Account getAccount() {

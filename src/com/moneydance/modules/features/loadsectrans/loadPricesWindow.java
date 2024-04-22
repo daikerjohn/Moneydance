@@ -107,7 +107,7 @@ public class loadPricesWindow extends JPanel implements TableListener {
 		spPrices.setAlignmentX(LEFT_ALIGNMENT);
 		panMid.add(spPrices,BorderLayout.LINE_START);
 		spPrices.setPreferredSize(new Dimension(Constants.LOADSCREENWIDTH,Constants.LOADSCREENHEIGHT));
-		jcSelect = new JCheckBox();
+		jcSelect = new JCheckBox("Select All");
 		jcSelect.setAlignmentX(LEFT_ALIGNMENT);
 		jcSelect.addItemListener(new ItemListener() {
 			@Override
@@ -177,12 +177,19 @@ public class loadPricesWindow extends JPanel implements TableListener {
 				 */
 				String strLine = brPrices.readLine(); 
 				String [] arColumns = strLine.split(",");
+				for(int i=0; i<arColumns.length; i++) {
+					arColumns[i] = arColumns[i].trim();
+				}
 				int iDate = 0;
 				int iRef = 0;
 				int iDesc = 0;
 				int iTicker = 0;
 				int iValue = 0;
 				long lAmount;
+				int iSharesColumn = -1;
+				long lSharesValue = 0;
+				int iPriceColumn = -1;
+				double dPriceValue = 0;
 				for (int i=0;i<arColumns.length;i++) {
 					if (arColumns[i].equals(params.getDate()))
 						iDate = i;
@@ -194,9 +201,23 @@ public class loadPricesWindow extends JPanel implements TableListener {
 						iTicker = i;
 					if (arColumns[i].equals(params.getValue()))
 						iValue = i;
+					if (arColumns[i].equals(params.getShares()))
+						iSharesColumn = i;
+					if (arColumns[i].equals(params.getPrice()))
+						iPriceColumn = i;
 				}
 				while ((strLine = brPrices.readLine())!= null) {
 					arColumns = splitString(strLine);
+					for(int i=0; i<arColumns.length; i++) {
+						arColumns[i] = arColumns[i].trim();
+					}
+					//System.err.println("old: " + arColumns.length);
+					//arColumns = strLine.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+					//System.err.println("new: " + arColumns.length);
+
+					//for(String t : arColumns) {
+					//	System.out.println("> "+t);
+					//}
 					/*
 					 * Amount is in pence, change to GBP
 					 * 
@@ -216,9 +237,13 @@ public class loadPricesWindow extends JPanel implements TableListener {
 							
 					JDateField jdtSettle = new JDateField (Main.cdate); 
 					jdtSettle.setDate(jdtSettle.getDateFromString(arColumns[iDate]));
+					// This is where we'd handle (dollars.cents) for negative values
+					// Remove the dollar sign
+					arColumns[iValue] = arColumns[iValue].replace("$", "");
 					int iPoint = arColumns[iValue].indexOf('.');
+					String strTemp = arColumns[iValue] + "00";
 					if ( iPoint != -1) {
-						String strTemp = arColumns[iValue].substring(0,iPoint);
+						strTemp = arColumns[iValue].substring(0,iPoint);
 						String strDecimal = arColumns[iValue].substring(iPoint+1);
 						switch (strDecimal.length()) {
 						case 1:
@@ -230,11 +255,36 @@ public class loadPricesWindow extends JPanel implements TableListener {
 						default :
 							strTemp = strTemp+strDecimal.substring(0, 2);
 						}
-						lAmount = Long.parseLong(strTemp);
 					}
-					else
-						lAmount = Long.parseLong(arColumns[iValue]+"00");
-						
+					strTemp = strTemp.trim();
+					if (strTemp.startsWith("(")) {
+						strTemp = strTemp.substring(1, strTemp.length() - 1);
+						if(strTemp.endsWith((")"))) {
+							strTemp = strTemp.substring(0, strTemp.length() - 1);
+						}
+						strTemp = "-" + strTemp;
+					}
+					lAmount = Long.parseLong(strTemp);
+
+					lSharesValue = 0L;
+					dPriceValue = 0.0;
+					if (iSharesColumn > 0 && iPriceColumn > 0) {
+						try {
+							lSharesValue = (long)(Double.parseDouble(arColumns[iSharesColumn])*1000);
+						} catch (Exception ignore) {
+							System.err.println("Could not parse as Long: " + arColumns[iSharesColumn]);
+						}
+						try {
+							arColumns[iPriceColumn] = arColumns[iPriceColumn].replace("$", "");
+							dPriceValue = Double.parseDouble(arColumns[iPriceColumn]);
+						} catch (Exception ignore) {
+							System.err.println("Could not parse as Double: " + arColumns[iPriceColumn]);
+						}
+						System.err.println("lSharesValue: " + lSharesValue + " dPriceValue: " + dPriceValue);
+					} else {
+						System.err.println("iSharesColumn: " + iSharesColumn + " iPriceColumn: " + iPriceColumn);
+					}
+
 					if (params.getExch()) {
 						strTicker = arColumns[iTicker];
 						int iPeriod = strTicker.indexOf('.');
@@ -265,7 +315,7 @@ public class loadPricesWindow extends JPanel implements TableListener {
 						}						
 					}
 					SecLine objLine = new SecLine(jdtSettle.getDateInt(),arColumns[iRef],
-							arColumns[iDesc],arColumns[iTicker]," ",lAmount,Main.mapAccounts.get(arColumns[iTicker]));
+							arColumns[iDesc],arColumns[iTicker]," ",lAmount,Main.mapAccounts.get(arColumns[iTicker]), lSharesValue, dPriceValue);
 					if (params.isDefined(arColumns[iRef]))
 						objLine.setIgnore(false);
 					else
@@ -300,7 +350,7 @@ public class loadPricesWindow extends JPanel implements TableListener {
 	 }
 	 private void generate() {
 	      //Create and set up the window.
-	      JFrame frame = new JFrame(" Load Security Prices - Build "+Main.buildStr);
+	      JFrame frame = new JFrame("Proposed Transactions - Build "+Main.buildStr);
 	      frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	      generateWindow = new GenerateWindow(setLine,acct,params);
 	      frame.getContentPane().add(generateWindow);
